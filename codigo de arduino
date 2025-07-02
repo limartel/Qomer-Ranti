@@ -1,0 +1,45 @@
+const int capacitivo = 8;      // Pin de salida digital del sensor capacitivo
+const int ledVerde = 4;        // LED verde
+const int ledRojo = 2;         // LED rojo
+const int motor = 11;          // Motor para apertura
+const int foto = 7;            // Sensor fotoeléctrico
+const int bomba = 9;           // Suministro del bloqueador
+
+void setup() {
+  pinMode(capacitivo, INPUT);
+  pinMode(ledVerde, OUTPUT);
+  pinMode(ledRojo, OUTPUT);
+  pinMode(motor, OUTPUT);
+  pinMode(foto, INPUT);
+  pinMode(bomba, OUTPUT);
+  Serial.begin(9600); // Inicializa la comunicación serial
+}
+void loop() {
+  int estadoFoto = digitalRead(foto);
+
+  if (estadoFoto == LOW) {
+    // Sensor NO detecta presencia
+    digitalWrite(ledRojo, HIGH);   // Enciende LED rojo
+    digitalWrite(ledVerde, LOW);   // Asegura que el LED verde esté apagado
+    analogWrite(motor, 0);         // Asegura que el motor esté apagado
+    analogWrite(bomba, 0);         // Asegura que la bomba esté apagada
+  } else {
+    // Sensor detecta presencia
+    digitalWrite(ledRojo, LOW);    // Apaga LED rojo
+    digitalWrite(ledVerde, HIGH);  // Enciende LED verde
+    analogWrite(motor, 255);       // Enciende el motor a máxima velocidad
+    delay(5000);                   // Espera 5 segundos
+    analogWrite(motor, 0);         // Apaga el motor
+    digitalWrite(ledVerde, LOW);   // Apaga LED verde
+    delay(3000);
+    int estadoCapacitivo = digitalRead(capacitivo);
+    if (estadoCapacitivo == HIGH) {
+      analogWrite(bomba, 255);     // Enciende la bomba a velocidad media
+      delay(5000);                 // Espera 3 segundos
+      analogWrite(bomba, 0);       // Apaga la bomba
+    } else {
+      analogWrite(bomba, 0);       // Asegura que la bomba esté apagada
+    } 
+  }
+  delay(1000); // Pequeño retardo para estabilidad
+}
