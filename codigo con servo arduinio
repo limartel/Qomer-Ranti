@@ -1,0 +1,60 @@
+#include <Servo.h>
+
+const int capacitivo = 8;
+const int ledVerde = 4;
+const int ledRojo = 2;
+const int foto = 7;
+const int bomba = 9;
+const int pinServo = 11;
+
+Servo servoMotor;
+bool botellaProcesada = false;
+
+void setup() {
+  pinMode(capacitivo, INPUT);
+  pinMode(ledVerde, OUTPUT);
+  pinMode(ledRojo, OUTPUT);
+  pinMode(foto, INPUT);
+  pinMode(bomba, OUTPUT);
+
+  servoMotor.attach(pinServo);
+  servoMotor.write(90); // Nueva posición inicial (cerrado invertido)
+
+  Serial.begin(9600);
+}
+
+void loop() {
+  int estadoFoto = digitalRead(foto);
+
+  if (estadoFoto == HIGH && !botellaProcesada) {
+    botellaProcesada = true;
+
+    digitalWrite(ledRojo, LOW);
+    digitalWrite(ledVerde, HIGH);
+
+    servoMotor.write(0);         // Ahora esta es la posición de apertura
+    delay(3000);
+    servoMotor.write(90);        // Y esta la de cierre
+
+    digitalWrite(ledVerde, LOW);
+    delay(2000);
+
+    int estadoCapacitivo = digitalRead(capacitivo);
+    if (estadoCapacitivo == HIGH) {
+      digitalWrite(bomba, HIGH);
+      delay(4000);
+      digitalWrite(bomba, LOW);
+    } else {
+      digitalWrite(bomba, LOW);
+    }
+
+  } else if (estadoFoto == LOW) {
+    botellaProcesada = false;
+    digitalWrite(ledRojo, HIGH);
+    digitalWrite(ledVerde, LOW);
+    servoMotor.write(90);       // Asegura posición cerrada
+    digitalWrite(bomba, LOW);
+  }
+
+  delay(1000);
+}
